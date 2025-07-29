@@ -20,7 +20,6 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 //!not to enforce length in sign-in component but in registration form
@@ -31,7 +30,7 @@ const formSchema = z.object({
 });
 
 export const SignInView = () => {
-  const router = useRouter();
+  const [pending, setPending] = useState(false);
 
   //!for my knowledge -> the state can be a string if there's error message or null when there's no error
   const [error, setError] = useState<string | null>(null);
@@ -44,17 +43,44 @@ export const SignInView = () => {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     setError(null);
+    setPending(true);
 
-    const { error } = await authClient.signIn.email(
+    authClient.signIn.email(
       {
         email: data.email,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: () => {
-          router.push("/");
+          setPending(false);
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
+        },
+      }
+    );
+  };
+
+  const onSocial = (provider: "github" | "google") => {
+    setError(null);
+    setPending(true);
+
+    authClient.signIn.social(
+      {
+        provider: provider,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
         },
       }
     );
@@ -65,7 +91,7 @@ export const SignInView = () => {
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <Form {...form}>
-            <form action="#" className="p-6 md:p-8">
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">Welcome Back</h1>
@@ -101,7 +127,7 @@ export const SignInView = () => {
                         <FormLabel>Password</FormLabel>
                         <FormControl>
                           <Input
-                            type="email"
+                            type="password"
                             placeholder="Enter your password"
                             {...field}
                           />
@@ -111,13 +137,13 @@ export const SignInView = () => {
                     )}
                   />
                 </div>
-                {true && (
+                {!!error && (
                   <Alert className="bg-destructive/10 border-none">
                     <OctagonAlertIcon className="h-4 w-4 !text-destructive" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>{error}</AlertTitle>
                   </Alert>
                 )}
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={pending}>
                   Sign-in
                 </Button>
                 <div
@@ -130,10 +156,22 @@ export const SignInView = () => {
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button type="button" variant="outline" className="w-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onSocial("google")}
+                    className="w-full"
+                    disabled={pending}
+                  >
                     Google
                   </Button>
-                  <Button type="button" variant="outline" className="w-full">
+                  <Button
+                    type="button"
+                    onClick={() => onSocial("github")}
+                    variant="outline"
+                    className="w-full"
+                    disabled={pending}
+                  >
                     GitHub
                   </Button>
                 </div>
