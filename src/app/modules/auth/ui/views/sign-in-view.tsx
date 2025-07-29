@@ -6,6 +6,8 @@ import { OctagonAlertIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { FaGithub, FaGoogle } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import {
@@ -30,6 +32,7 @@ const formSchema = z.object({
 });
 
 export const SignInView = () => {
+  const router = useRouter();
   const [pending, setPending] = useState(false);
 
   //!for my knowledge -> the state can be a string if there's error message or null when there's no error
@@ -47,6 +50,8 @@ export const SignInView = () => {
     setError(null);
     setPending(true);
 
+    //! callbackurl is server side unlike router.push which is client side
+
     authClient.signIn.email(
       {
         email: data.email,
@@ -56,6 +61,7 @@ export const SignInView = () => {
       {
         onSuccess: () => {
           setPending(false);
+          router.push("/");
         },
         onError: ({ error }) => {
           setPending(false);
@@ -163,7 +169,7 @@ export const SignInView = () => {
                     className="w-full"
                     disabled={pending}
                   >
-                    Google
+                    <FaGoogle />
                   </Button>
                   <Button
                     type="button"
@@ -172,7 +178,7 @@ export const SignInView = () => {
                     className="w-full"
                     disabled={pending}
                   >
-                    GitHub
+                    <FaGithub />
                   </Button>
                 </div>
                 <div className="text-center text-sm">

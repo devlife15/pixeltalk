@@ -3,6 +3,7 @@
 import { email, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OctagonAlertIcon } from "lucide-react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
@@ -21,6 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 //!not to enforce length in sign-in component but in registration form
 
@@ -38,6 +40,7 @@ const formSchema = z
 
 export const SignUpView = () => {
   const [pending, setPending] = useState(false);
+  const router = useRouter();
 
   //!for my knowledge -> the state can be a string if there's error message or null when there's no error
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +69,7 @@ export const SignUpView = () => {
       {
         onSuccess: () => {
           setPending(false);
+          router.push("/");
         },
         onError: ({ error }) => {
           setPending(false);
@@ -211,7 +215,7 @@ export const SignUpView = () => {
                     className="w-full"
                     disabled={pending}
                   >
-                    Google
+                    <FaGoogle />
                   </Button>
                   <Button
                     type="button"
@@ -220,7 +224,7 @@ export const SignUpView = () => {
                     className="w-full"
                     disabled={pending}
                   >
-                    GitHub
+                    <FaGithub />
                   </Button>
                 </div>
                 <div className="text-center text-sm">
